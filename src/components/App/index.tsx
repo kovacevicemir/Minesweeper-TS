@@ -1,20 +1,34 @@
-import "./app.scss"
+import "./app.scss";
 
-import React from 'react'
-import NumberDisplay from "../NumberDisplay"
-import Face from "../Face/Face"
+import React, {useState} from "react";
+import NumberDisplay from "../NumberDisplay";
+import {generateCells} from "../../Utils"
+import Face from "../Face/Face";
+import ButtonCell from "../ButtonCell"
+
 
 const App: React.FC = () => {
-    return (
-        <div className="App">
-            <div className="Header">
-                <NumberDisplay value={0} />
-                <Face />
-                <NumberDisplay value={23} />
-            </div>
-            <div className="Body">Body</div>
-        </div>
-    )
-}
+  const [cells, setCells] = useState(generateCells());
 
-export default App
+  console.log(cells)
+  const renderCells = (): React.ReactNode => {
+    return cells.map((row, rowIndex) => row.map((cell, colIndex) => {
+      return <ButtonCell key={`${rowIndex}-${colIndex}`}/>
+    }))
+  }
+
+  return (
+    <div className="App">
+      <div className="Header">
+        <NumberDisplay value={0} />
+        <Face />
+        <NumberDisplay value={23} />
+      </div>
+      <div className="Body">
+        {renderCells()}
+      </div>
+    </div>
+  );
+};
+
+export default App;
