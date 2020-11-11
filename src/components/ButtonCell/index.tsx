@@ -20,6 +20,8 @@ const ButtonCell: React.FC<ButtonCellProps> = ({ row, col, state, value }) => {
           </span>
         );
       }
+      return value;
+      
     } else if (state === CellState.flagged) {
       //Display flag emoji here
       return (
