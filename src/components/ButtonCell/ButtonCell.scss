@@ -2,6 +2,20 @@
 
 .ButtonCell{
     @include borders;
+    @include buttons;
     width:30px;
     height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.visible{
+        border-color: #7b7b7b;
+        border-width: 1px;
+    }
+
+    span{
+        margin-left: 2px;
+        font-size: 15px;
+    }
 }

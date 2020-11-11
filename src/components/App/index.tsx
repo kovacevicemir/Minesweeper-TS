@@ -13,7 +13,7 @@ const App: React.FC = () => {
   console.log(cells)
   const renderCells = (): React.ReactNode => {
     return cells.map((row, rowIndex) => row.map((cell, colIndex) => {
-      return <ButtonCell key={`${rowIndex}-${colIndex}`}/>
+      return <ButtonCell key={`${rowIndex}-${colIndex}`} state={cell.state} value={cell.value} row={rowIndex} col={colIndex}/>
     }))
   }
 
