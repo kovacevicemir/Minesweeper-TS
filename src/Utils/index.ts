@@ -4,14 +4,13 @@ import { CellValue, CellState, Cell } from "../Types";
 export const generateCells = (): Cell[][] => {
   const cells: Cell[][] = [];
 
-  //generating all cells
+  // generating all cells
   for (let row = 0; row < MAX_ROWS; row++) {
     cells.push([]);
-
     for (let col = 0; col < MAX_COLS; col++) {
       cells[row].push({
         value: CellValue.none,
-        state: CellState.visible,
+        state: CellState.open
       });
     }
   }
@@ -27,7 +26,7 @@ export const generateCells = (): Cell[][] => {
       //turn cell into bomb
       cells[randomRow][randomCol] = {
         value: CellValue.bomb,
-        state: CellState.visible,
+        state: CellState.open,
       };
 
       bombsPlaced++;

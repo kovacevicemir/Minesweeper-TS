@@ -1,8 +1,10 @@
 import React from "react";
 import "./Face.scss";
 
-const Face = () => {
-  return <div className="Face">😁</div>;
+type Smiley = any;
+
+const Face = ({smiley}: Smiley) => {
+  return <div className="Face">{smiley}</div>;
 };
 
 export default Face;
