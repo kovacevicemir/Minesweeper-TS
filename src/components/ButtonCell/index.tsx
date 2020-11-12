@@ -7,11 +7,20 @@ interface ButtonCellProps {
   col: number;
   state: CellState;
   value: CellValue;
+  red?: boolean;
   onClick(rowParam: number, colParam: number): (...args: any[]) => void;
   onContextMenu(rowParam: number, colParam: number): (...args: any[]) => void;
 }
 
-const ButtonCell: React.FC<ButtonCellProps> = ({ row, col, state, value, onClick, onContextMenu }) => {
+const ButtonCell: React.FC<ButtonCellProps> = ({
+  row,
+  col,
+  state,
+  value,
+  onClick,
+  onContextMenu,
+  red,
+}) => {
   const renderContent = (): React.ReactNode => {
     if (state === CellState.visible) {
       if (value === CellValue.bomb) {
@@ -21,11 +30,10 @@ const ButtonCell: React.FC<ButtonCellProps> = ({ row, col, state, value, onClick
             💣
           </span>
         );
-      }else if(value === CellValue.none){
+      } else if (value === CellValue.none) {
         return null;
       }
       return value;
-      
     } else if (state === CellState.flagged) {
       //Display flag emoji here
       return (
@@ -40,9 +48,11 @@ const ButtonCell: React.FC<ButtonCellProps> = ({ row, col, state, value, onClick
 
   return (
     <div
-      className={`ButtonCell ${state === CellState.visible ? "visible" : ""} value-${value}`}
-      onClick={onClick(row,col)}
-      onContextMenu={onContextMenu(row,col)}
+      className={`ButtonCell ${
+        state === CellState.visible ? "visible" : ""
+      } value-${value} ${red ? "red" : ""}`}
+      onClick={onClick(row, col)}
+      onContextMenu={onContextMenu(row, col)}
     >
       {renderContent()}
     </div>

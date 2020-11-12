@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [time, setTime] = useState<number>(0);
   const [live, setLive] = useState<boolean>(false);
   const [bombCount, setBombCount] = useState<number>(10);
+  const [hasLost, setHasLost] = useState<boolean>(false);
 
   useEffect(() => {
     const handleMouseDown = (): void => {
@@ -45,6 +46,13 @@ const App: React.FC = () => {
     }
   }, [live, time]);
 
+  useEffect(() => {
+    if (hasLost) {
+      setFace(EFace.lost);
+      setLive(false);
+    }
+  }, [hasLost]);
+
   const handleCellClick = (rowParam: number, colParam: number) => (): void => {
     //start the game
     if (!live) {
@@ -55,20 +63,26 @@ const App: React.FC = () => {
     const currentCell = cells[rowParam][colParam];
     let newCells = cells.slice();
 
-    if(currentCell.state === CellState.flagged || currentCell.state === CellState.visible){
+    if (
+      currentCell.state === CellState.flagged ||
+      currentCell.state === CellState.visible
+    ) {
       return; //if there is a flag or cell is already opened dont do anything
     }
 
-    if(currentCell.value === CellValue.bomb){
-      //TODO: take care of bomb click!
-    }else if(currentCell.value === CellValue.none){
+    if (currentCell.value === CellValue.bomb) {
+      //take care of bomb click!
+      setHasLost(true);
+      newCells[rowParam][colParam].red = true;
+      newCells = showAllBombs();
+    } else if (currentCell.value === CellValue.none) {
       //Open multiple cells - spreading;
-      newCells = openMultipleCells(newCells,rowParam,colParam);
-      setCells(newCells)
-    }else{
+      newCells = openMultipleCells(newCells, rowParam, colParam);
+      setCells(newCells);
+    } else {
       newCells[rowParam][colParam].state = CellState.visible;
     }
-    setCells(newCells)
+    setCells(newCells);
   };
 
   //right click - put flag
@@ -76,8 +90,8 @@ const App: React.FC = () => {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ): void => {
     e.preventDefault();
-    if(!live){
-      return //Cant put flag if game hasn`t started
+    if (!live) {
+      return; //Cant put flag if game hasn`t started
     }
 
     const currentCells = cells.slice(); //copy of current cells
@@ -87,11 +101,11 @@ const App: React.FC = () => {
     } else if (currentCell.state === CellState.open) {
       currentCells[rowParam][colParam].state = CellState.flagged;
       setCells(currentCells);
-      setBombCount(bombCount-1);
-    }else{
+      setBombCount(bombCount - 1);
+    } else {
       currentCells[rowParam][colParam].state = CellState.open;
       setCells(currentCells);
-      setBombCount(bombCount+1);
+      setBombCount(bombCount + 1);
     }
   };
 
@@ -107,6 +121,7 @@ const App: React.FC = () => {
             col={colIndex}
             onClick={handleCellClick}
             onContextMenu={onContextMenu}
+            red={cell.red}
           />
         );
       })
@@ -114,12 +129,26 @@ const App: React.FC = () => {
   };
 
   const handleFaceClick = (): void => {
-    console.log("CLICK");
-    if (live) {
-      setLive(false);
-      setTime(0);
-      setCells(generateCells());
-    }
+    setLive(false);
+    setTime(0);
+    setCells(generateCells());
+    setHasLost(false);
+  };
+
+  const showAllBombs = (): Cell[][] => {
+    const currentCells = cells.slice();
+    return currentCells.map((row) =>
+      row.map((cell) => {
+        if (cell.value === CellValue.bomb) {
+          return {
+            ...cell,
+            state: CellState.visible,
+          };
+        } else {
+          return cell;
+        }
+      })
+    );
   };
 
   return (
