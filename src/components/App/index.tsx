@@ -2,10 +2,10 @@ import "./app.scss";
 
 import React, { useState, useEffect } from "react";
 import NumberDisplay from "../NumberDisplay";
-import { generateCells } from "../../Utils";
+import { generateCells, openMultipleCells } from "../../Utils";
 import Face from "../Face/Face";
 import ButtonCell from "../ButtonCell";
-import { Cell, CellState, EFace } from "../../Types";
+import { Cell, CellState, CellValue, EFace } from "../../Types";
 
 const App: React.FC = () => {
   const [cells, setCells] = useState<Cell[][]>(generateCells());
@@ -46,11 +46,29 @@ const App: React.FC = () => {
   }, [live, time]);
 
   const handleCellClick = (rowParam: number, colParam: number) => (): void => {
-    console.log(rowParam, colParam);
     //start the game
     if (!live) {
+      //TODO: Make sure you dont click on a bomb in the beginning
       setLive(true);
     }
+
+    const currentCell = cells[rowParam][colParam];
+    let newCells = cells.slice();
+
+    if(currentCell.state === CellState.flagged || currentCell.state === CellState.visible){
+      return; //if there is a flag or cell is already opened dont do anything
+    }
+
+    if(currentCell.value === CellValue.bomb){
+      //TODO: take care of bomb click!
+    }else if(currentCell.value === CellValue.none){
+      //Open multiple cells - spreading;
+      newCells = openMultipleCells(newCells,rowParam,colParam);
+      setCells(newCells)
+    }else{
+      newCells[rowParam][colParam].state = CellState.visible;
+    }
+    setCells(newCells)
   };
 
   //right click - put flag
