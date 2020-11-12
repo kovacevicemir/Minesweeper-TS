@@ -1,10 +1,17 @@
 import React from "react";
 import "./Face.scss";
 
-type Smiley = any;
+interface IFace {
+  smiley: any;
+  onClick():void;
+}
 
-const Face = ({smiley}: Smiley) => {
-  return <div className="Face">{smiley}</div>;
+const Face:React.FC<IFace> = ({ smiley, onClick}) => {
+  return (
+    <div onClick={() => onClick()} className="Face">
+      {smiley}
+    </div>
+  );
 };
 
 export default Face;

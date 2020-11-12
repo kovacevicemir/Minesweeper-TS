@@ -5,13 +5,14 @@ import NumberDisplay from "../NumberDisplay";
 import { generateCells } from "../../Utils";
 import Face from "../Face/Face";
 import ButtonCell from "../ButtonCell";
-import { Cell, EFace } from "../../Types";
+import { Cell, CellState, EFace } from "../../Types";
 
 const App: React.FC = () => {
   const [cells, setCells] = useState<Cell[][]>(generateCells());
   const [face, setFace] = useState<EFace>(EFace.smile);
   const [time, setTime] = useState<number>(0);
   const [live, setLive] = useState<boolean>(false);
+  const [bombCount, setBombCount] = useState<number>(10);
 
   useEffect(() => {
     const handleMouseDown = (): void => {
@@ -30,28 +31,51 @@ const App: React.FC = () => {
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  },[]);
+  }, []);
 
-  useEffect(()=>{
-    if(live){
-      const timer = setInterval(()=>{
+  useEffect(() => {
+    if (live && time < 999) {
+      const timer = setInterval(() => {
         setTime(time + 1);
-      },1000)
+      }, 1000);
 
       return () => {
         clearInterval(timer);
-      }
+      };
     }
-    
-  },[live, time])
+  }, [live, time]);
 
-  const handleCellClick = (rowParam:number, colParam:number):void =>{
-    console.log(rowParam, colParam)
+  const handleCellClick = (rowParam: number, colParam: number) => (): void => {
+    console.log(rowParam, colParam);
     //start the game
-    if(!live){
+    if (!live) {
       setLive(true);
     }
-  }
+  };
+
+  //right click - put flag
+  const onContextMenu = (rowParam: number, colParam: number) => (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ): void => {
+    e.preventDefault();
+    if(!live){
+      return //Cant put flag if game hasn`t started
+    }
+
+    const currentCells = cells.slice(); //copy of current cells
+    const currentCell = cells[rowParam][colParam];
+    if (currentCell.state === CellState.visible) {
+      return;
+    } else if (currentCell.state === CellState.open) {
+      currentCells[rowParam][colParam].state = CellState.flagged;
+      setCells(currentCells);
+      setBombCount(bombCount-1);
+    }else{
+      currentCells[rowParam][colParam].state = CellState.open;
+      setCells(currentCells);
+      setBombCount(bombCount+1);
+    }
+  };
 
   const renderCells = (): React.ReactNode => {
     return cells.map((row, rowIndex) =>
@@ -64,17 +88,27 @@ const App: React.FC = () => {
             row={rowIndex}
             col={colIndex}
             onClick={handleCellClick}
+            onContextMenu={onContextMenu}
           />
         );
       })
     );
   };
 
+  const handleFaceClick = (): void => {
+    console.log("CLICK");
+    if (live) {
+      setLive(false);
+      setTime(0);
+      setCells(generateCells());
+    }
+  };
+
   return (
     <div className="App">
       <div className="Header">
-        <NumberDisplay value={0} />
-        <Face smiley={face} />
+        <NumberDisplay value={bombCount} />
+        <Face smiley={face} onClick={handleFaceClick} />
         <NumberDisplay value={time} />
       </div>
       <div className="Body">{renderCells()}</div>
