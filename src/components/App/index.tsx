@@ -6,6 +6,7 @@ import { generateCells, openMultipleCells } from "../../Utils";
 import Face from "../Face/Face";
 import ButtonCell from "../ButtonCell";
 import { Cell, CellState, CellValue, EFace } from "../../Types";
+import { MAX_ROWS, MAX_COLS } from "../../Constants";
 
 const App: React.FC = () => {
   const [cells, setCells] = useState<Cell[][]>(generateCells());
@@ -14,6 +15,7 @@ const App: React.FC = () => {
   const [live, setLive] = useState<boolean>(false);
   const [bombCount, setBombCount] = useState<number>(10);
   const [hasLost, setHasLost] = useState<boolean>(false);
+  const [hasWon, setHasWon] = useState<boolean>(false);
 
   useEffect(() => {
     const handleMouseDown = (): void => {
@@ -53,15 +55,32 @@ const App: React.FC = () => {
     }
   }, [hasLost]);
 
+  useEffect(() => {
+    if (hasWon) {
+      setLive(false);
+      setFace(EFace.won);
+    }
+  }, [hasWon]);
+
   const handleCellClick = (rowParam: number, colParam: number) => (): void => {
+    let newCells = cells.slice();
+
     //start the game
     if (!live) {
-      //TODO: Make sure you dont click on a bomb in the beginning
+      //Make sure you dont click on a bomb in the beginning:
+      let isBomb = newCells[rowParam][colParam].value === CellValue.bomb;
+      while (isBomb) {
+        newCells = generateCells();
+        if (newCells[rowParam][colParam].value !== CellValue.bomb) {
+          isBomb = false;
+          break;
+        }
+      }
+
       setLive(true);
     }
 
-    const currentCell = cells[rowParam][colParam];
-    let newCells = cells.slice();
+    const currentCell = newCells[rowParam][colParam];
 
     if (
       currentCell.state === CellState.flagged ||
@@ -82,6 +101,38 @@ const App: React.FC = () => {
     } else {
       newCells[rowParam][colParam].state = CellState.visible;
     }
+
+    // Check to see if you have won
+    let safeOpenCellsExists = false;
+    for (let row = 0; row < MAX_ROWS; row++) {
+      for (let col = 0; col < MAX_COLS; col++) {
+        const currentCell = newCells[row][col];
+
+        if (
+          currentCell.value !== CellValue.bomb &&
+          currentCell.state === CellState.open
+        ) {
+          safeOpenCellsExists = true;
+          break;
+        }
+      }
+    }
+
+    if (!safeOpenCellsExists) {
+      newCells = newCells.map((row) =>
+        row.map((cell) => {
+          if (cell.value === CellValue.bomb) {
+            return {
+              ...cell,
+              state: CellState.flagged,
+            };
+          }
+          return cell;
+        })
+      );
+      setHasWon(true);
+    }
+
     setCells(newCells);
   };
 
@@ -133,6 +184,8 @@ const App: React.FC = () => {
     setTime(0);
     setCells(generateCells());
     setHasLost(false);
+    setHasWon(false);
+    setBombCount(10);
   };
 
   const showAllBombs = (): Cell[][] => {
